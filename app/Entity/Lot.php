@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use App\Service\WalletService;
+use App\User;
 
 class Lot extends Model
 {
@@ -15,6 +17,22 @@ class Lot extends Model
         'date_time_close',
         'price'
     ];
+
+    public function getSeller(): User 
+    {
+        return User::find($this->seller_id);
+    }
+
+    public function getCurrency(): Currency
+    {
+        return Currency::find($this->currency_id);
+    }
+
+    public function getAmount(Walletservice $walletService)
+    {
+        $walletId = $walletService->WalletIdByUserId($this->seller_id);
+        return $walletService->getMoney($walletId, $this->currency_id)->amount;        
+    }
 
     public function getDateTimeOpen() : int
     {

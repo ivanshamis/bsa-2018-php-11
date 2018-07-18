@@ -31,6 +31,10 @@ class TradeCreated extends Mailable
      */
     public function build()
     {
-
+        return $this->view('trade-created-email')
+            ->with([
+                'lotId' => $this->trade->lotId,
+                'amount' => $this->trade->amount
+            ]);
     }
 }

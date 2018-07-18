@@ -1,0 +1,1 @@
+New trade created for lot #{{ $lotId }} (amount: {{ $amount }})!
