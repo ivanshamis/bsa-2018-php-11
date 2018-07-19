@@ -9,7 +9,7 @@ class UserRepo implements UserRepository
 {
     public function getById(int $id) : ?User
     {
-        return User::find($userId)->first();
+        return User::find($id)->first();
     }
 
     public function add(User $user): User

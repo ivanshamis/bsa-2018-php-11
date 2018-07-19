@@ -17,7 +17,14 @@ use App\Exceptions\MarketException\{
 };
 use App\Service\Contracts\{MarketService,WalletService};
 use App\Mail\TradeCreated;
-use App\Repository\Contracts\{LotRepository,WalletRepository,MoneyRepository,TradeRepository,UserRepository};
+use App\Repository\Contracts\{
+        LotRepository,
+        WalletRepository,
+        MoneyRepository,
+        TradeRepository,
+        UserRepository,
+        CurrencyRepository
+};
 use Illuminate\Support\Facades\Mail;
 use App\User;
 
@@ -29,6 +36,7 @@ class MarketServ implements MarketService
     private $moneyRepository;
     private $tradeRepository;
     private $userRepository; 
+    private $currencyRepository; 
     private $walletService;
     private $moneyRequest;
 
@@ -38,6 +46,7 @@ class MarketServ implements MarketService
         MoneyRepository $moneyRepository,
         TradeRepository $tradeRepository,
         UserRepository $userRepository,
+        CurrencyRepository $currencyRepository,
         WalletService $walletService,
         MoneyRequest $moneyRequest)
     {
@@ -46,6 +55,7 @@ class MarketServ implements MarketService
         $this->moneyRepository = $moneyRepository;
         $this->tradeRepository = $tradeRepository;
         $this->userRepository = $userRepository;
+        $this->currencyRepository = $currencyRepository;
         $this->walletService = $walletService;
         $this->moneyRequest = $moneyRequest;
     }
@@ -160,7 +170,13 @@ class MarketServ implements MarketService
         if ($lot===NULL) {
             throw new LotDoesNotExistException;
         }
-        return new LotResponse($lot);
+        return app()->make(LotResponse::class, [
+            'lot' => $lot,
+            'userRepository' => $this->userRepository,
+            'currencyRepository' => $this->currencyRepository,
+            'moneyRepository' => $this->moneyRepository,
+            'walletRepository' => $this->walletRepository
+        ]);
     }
 
     /**
@@ -171,9 +187,11 @@ class MarketServ implements MarketService
     public function getLotList() : array
     {
         $lotResponse = [];
-        $lots = Lot::all();
-        foreach ($lots as $lot) {
-            $LotResponse[] = $this->getLot($lot);  
+        $lots = $this->lotRepository->findAll();
+        if (is_array($lots)) {
+            foreach ($lots as $lot) {
+                $LotResponse[] = $this->getLot($lot);  
+            }
         }        
         return $lotResponse;
     }

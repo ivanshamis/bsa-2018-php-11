@@ -183,7 +183,7 @@ class BuyLotTest extends TestCase
         return $money;
     }
 
-    public function addUser(User $user) : User
+    protected function addUser(User $user) : User
     {   
         if (!is_array($this->users)) {
             $user->id = 1;
@@ -195,7 +195,7 @@ class BuyLotTest extends TestCase
         return $user;
     }
 
-    public function addWallet(Wallet $wallet) : Wallet
+    protected function addWallet(Wallet $wallet) : Wallet
     {   
         if (!is_array($this->wallets)) {
             $wallet->id = 1;
@@ -207,17 +207,17 @@ class BuyLotTest extends TestCase
         return $wallet;
     }
 
-    public function getLotById(int $id) : ?Lot
+    protected function getLotById(int $id) : ?Lot
     {
         return $this->lots[$id];
     }
 
-    public function getUserById(int $id) : ?User
+    protected function getUserById(int $id) : ?User
     {
         return $this->users[$id];
     }
 
-    public function findWalletByUser(int $userId) : ?Wallet
+    protected function findWalletByUser(int $userId) : ?Wallet
     {
         $findWallet = NULL;
         foreach ($this->wallets as $wallet) {
@@ -229,7 +229,7 @@ class BuyLotTest extends TestCase
         return $findWallet;
     }
 
-    public function findMoneyByWalletAndCurrency(int $walletId, int $currencyId) : ?Money
+    protected function findMoneyByWalletAndCurrency(int $walletId, int $currencyId) : ?Money
     {
         $findMoney = NULL;
         foreach ($this->monies as $money) {

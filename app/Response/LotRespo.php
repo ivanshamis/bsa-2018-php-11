@@ -2,8 +2,9 @@
 
 namespace App\Response;
 
-use App\Entity\{Lot, User, Currency};
-use App\Service\Contracts\WalletService;
+use App\Entity\{Lot, User, Currency, Money, Wallet};
+use App\Response\Contracts\LotResponse;
+use App\Repository\Contracts\{LotRepository,CurrencyRepository,UserRepository,MoneyRepository,WalletRepository};
 
 class LotRespo implements LotResponse
 {
@@ -15,15 +16,24 @@ class LotRespo implements LotResponse
     private $dateTimeClose;
     private $price;
 
-    public function __construct(Lot $lot) 
+    public function __construct(
+        Lot $lot, 
+        UserRepository $userRepository,
+        LotRepository $lotRepository, 
+        CurrencyRepository $currencyRepository,
+        MoneyRepository $moneyRepository,
+        WalletRepository $walletRepository
+    ) 
     {
         $this->id = $lot->id;
-        $this->userName = $lot->getSeller()->name;
-        $this->currencyName = $lot->getCurrency()->name;
-        $this->amount = $lot->getAmount();
-        $this->datetimeOpen = date('Y/m/d h:i:s', $lot->getDatetimeOpen());
-        $this->dateTimeClose = date('Y/m/d h:i:s', $lot->getDatetimeClose());
-        $this->price = $lot->price;
+        $this->userName = $userRepository->getById($lot->seller_id)->name;
+        $this->currencyName = $currencyRepository->getById($lot->currency_id)->name;
+        $wallet = $walletRepository->findByUser($lot->seller_id);
+        $money = $moneyRepository->findByWalletAndCurrency($wallet->id,$lot->currency_id);
+        $this->amount = $money->amount;
+        $this->dateTimeOpen = date('Y/m/d h:i:s', $lot->getDateTimeOpen());
+        $this->dateTimeClose = date('Y/m/d h:i:s', $lot->getDateTimeClose());
+        $this->price = number_format($lot->price,2,",","");
     }
 
     /**
