@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use App\Entity\{Currency,Lot};
+use App\Entity\{Currency,Lot,Wallet,Money};
 use App\User;
 
 class TestDataFactory
@@ -29,5 +29,15 @@ class TestDataFactory
     public static function createLot(): Lot
     {
         return factory(Lot::class)->make();
+    }
+
+    public static function createWallet(): Wallet
+    {
+        return factory(Wallet::class)->make();
+    }
+
+    public static function createMoney(): Money
+    {
+        return factory(Money::class)->make();
     }
 }

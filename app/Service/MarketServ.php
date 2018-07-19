@@ -17,7 +17,9 @@ use App\Exceptions\MarketException\{
 };
 use App\Service\Contracts\{MarketService,WalletService};
 use App\Mail\TradeCreated;
-use App\Repository\Contracts\{LotRepository,WalletRepository,MoneyRepository,TradeRepository};
+use App\Repository\Contracts\{LotRepository,WalletRepository,MoneyRepository,TradeRepository,UserRepository};
+use Illuminate\Support\Facades\Mail;
+use App\User;
 
 
 class MarketServ implements MarketService
@@ -25,7 +27,8 @@ class MarketServ implements MarketService
     private $lotRepository; 
     private $walletRepository; 
     private $moneyRepository;
-    private $tradeRepository; 
+    private $tradeRepository;
+    private $userRepository; 
     private $walletService;
     private $moneyRequest;
 
@@ -34,6 +37,7 @@ class MarketServ implements MarketService
         WalletRepository $walletRepository,
         MoneyRepository $moneyRepository,
         TradeRepository $tradeRepository,
+        UserRepository $userRepository,
         WalletService $walletService,
         MoneyRequest $moneyRequest)
     {
@@ -41,6 +45,7 @@ class MarketServ implements MarketService
         $this->walletRepository = $walletRepository;
         $this->moneyRepository = $moneyRepository;
         $this->tradeRepository = $tradeRepository;
+        $this->userRepository = $userRepository;
         $this->walletService = $walletService;
         $this->moneyRequest = $moneyRequest;
     }
@@ -99,9 +104,9 @@ class MarketServ implements MarketService
     {
         $lot = $this->lotRepository->getById($lotRequest->getLotId());
         if ($lot === NULL) {
-            throw new BuyInactiveLotException;   
+            throw new LotDoesNotExistException;   
         }
-        if ($lot->getDateTimeClose() > time()) {
+        if ($lot->getDateTimeClose() < time()) {
             throw new BuyInactiveLotException;
         }
         if ($lot->seller_id === $lotRequest->getUserId()) {
@@ -113,17 +118,17 @@ class MarketServ implements MarketService
         $sellerWallet = $this->walletRepository->findByUser($lot->seller_id); 
         $lotMoney = $this->moneyRepository->findByWalletAndCurrency($sellerWallet->id, $lot->currency_id);
         if ($lotRequest->getAmount() > $lotMoney->amount) {
-            throw new BuyNegativeAmountException;
+            throw new BuyNegativeAmountException();
         }
         $userWallet = $this->walletRepository->findByUser($lotRequest->getUserId());
 
         $this->moneyRequest->setWalletId($sellerWallet->id);
         $this->moneyRequest->setCurrencyId($lot->currency_id);
         $this->moneyRequest->setAmount($lotRequest->getAmount());
-        $this->walletSerrvice->takeMoney($this->moneyRequest);
+        $this->walletService->takeMoney($this->moneyRequest);
 
         $this->moneyRequest->setWalletId($userWallet->id);
-        $this->walletSerrvice->addMoney($this->moneyRequest);
+        $this->walletService->addMoney($this->moneyRequest);
 
         $trade = new Trade;
         $trade->fill([
@@ -134,7 +139,8 @@ class MarketServ implements MarketService
         $trade = $this->tradeRepository->add($trade);
 
         $tradeCreated = new TradeCreated($trade);
-        Mail::to(User::find($lot->seller_id))->send($tradeCreated);
+        $user = $this->userRepository->getById($lot->seller_id);
+        Mail::to($user)->send($tradeCreated);
 
         return $trade;
     }

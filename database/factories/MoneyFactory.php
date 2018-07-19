@@ -1,7 +1,7 @@
 <?php
 
 use Faker\Generator as Faker;
-use App\Entity\{Currency,Wallet,Money};
+use App\Entity\Money;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,8 +15,8 @@ use App\Entity\{Currency,Wallet,Money};
 */
 $factory->define(Money::class, function (Faker $faker) {
     return [
-        'currency_id' => Currency::inRandomOrder()->first()->id,
+        'currency_id' => $faker->numberBetween(1,99),
         'amount' => $faker->randomFloat(2,0,1000000),
-        'wallet_id' => Wallet::inRandomOrder()->first()->id,
+        'wallet_id' => $faker->numberBetween(1,99),
     ];
 });

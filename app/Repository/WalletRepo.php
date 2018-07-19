@@ -15,6 +15,6 @@ class WalletRepo implements WalletRepository
 
     public function findByUser(int $userId) : ?Wallet
     {
-        return Wallet::where('user_id',$userId)->first;
+        return Wallet::where('user_id',$userId)->first();
     }
 }

@@ -15,7 +15,7 @@ class MoneyReq implements MoneyRequest
         $this->walletId = $walletId;
     }
 
-    public function setCurrencyId(int $walletId)
+    public function setCurrencyId(int $currencyId)
     {
         $this->currencyId = $currencyId;
     }

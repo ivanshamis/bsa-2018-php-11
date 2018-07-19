@@ -3,7 +3,6 @@
 namespace Tests\Unit\MarketService;
 
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
 use App\Service\Contracts\MarketService;
 use App\Request\Contracts\AddLotRequest;
 use App\Repository\Contracts\LotRepository;
@@ -21,12 +20,11 @@ class AddLotTest extends TestCase
     private $lotRepository;
     private $lots;
     private $lot;
+    private $request;
 
     protected function setUp()
     {
         parent::setUp();
-
-        $this->lot = TestDataFactory::createLot();
 
         $this->lotRepository = $this->createMock(LotRepository::class);
         $this->lotRepository->method('add')
@@ -41,11 +39,20 @@ class AddLotTest extends TestCase
             ->will($this->returnCallback(function($id) {
                 return $this->getById($id);
         }));
-        $this->lotRepository->add($this->lot);
+        $this->lot = TestDataFactory::createLot();
+        $this->lot = $this->lotRepository->add($this->lot);
         
         $this->marketService = $this->app->make(MarketService::class, [
             'lotRepository' => $this->lotRepository
         ]);
+
+        $this->request = [
+            'currencyId' => 1,
+            'sellerId' => 1,
+            'dateTimeOpen' => time(),
+            'dateTimeClose' => time()+3600,
+            'price' => 1
+        ];
     }
 
     public function add(Lot $lot) : Lot
@@ -83,27 +90,19 @@ class AddLotTest extends TestCase
 
     public function test_add_lot_active_found()
     {   
-        $lotRequest = $this->app->make(AddLotRequest::class, [
-            'currencyId' => $this->lot->currency_id,
-            'sellerId' => $this->lot->seller_id,
-            'dateTimeOpen' => time(),
-            'dateTimeClose' => time(),
-            'price' => 200
-        ]);
+        $this->request['currencyId'] = $this->lot->currency_id;
+        $this->request['sellerId'] = $this->lot->seller_id;
+        $lotRequest = $this->app->make(AddLotRequest::class, $this->request);
 
         $this->expectException(ActiveLotExistsException::class);
+
         $this->marketService->addLot($lotRequest);
     }
 
     public function test_add_lot_bad_time()
     {
-        $lotRequest = $this->app->make(AddLotRequest::class, [
-            'currencyId' => 100,
-            'sellerId' => 1,
-            'dateTimeOpen' => time()+100,
-            'dateTimeClose' => time(),
-            'price' => 100
-        ]);
+        $this->request['dateTimeOpen'] = $this->request['dateTimeClose']+1000;
+        $lotRequest = $this->app->make(AddLotRequest::class, $this->request);
 
         $this->expectException(IncorrectTimeCloseException::class);
 
@@ -112,13 +111,8 @@ class AddLotTest extends TestCase
 
     public function test_add_lot_bad_price()
     {
-        $lotRequest = $this->app->make(AddLotRequest::class, [
-            'currencyId' => 100,
-            'sellerId' => 1,
-            'dateTimeOpen' => time(),
-            'dateTimeClose' => time(),
-            'price' => -100
-        ]);
+        $this->request['price'] = -1;
+        $lotRequest = $this->app->make(AddLotRequest::class, $this->request);
 
         $this->expectException(IncorrectPriceException::class);
 
@@ -127,13 +121,7 @@ class AddLotTest extends TestCase
 
     public function test_add_lot_good()
     {
-        $lotRequest = $this->app->make(AddLotRequest::class, [
-            'currencyId' => 100,
-            'sellerId' => 1,
-            'dateTimeOpen' => time(),
-            'dateTimeClose' => time(),
-            'price' => 100
-        ]);
+        $lotRequest = $this->app->make(AddLotRequest::class, $this->request);
 
         $lot  = $this->marketService->addLot($lotRequest);
         $this->assertInstanceOf(Lot::class, $lot);
