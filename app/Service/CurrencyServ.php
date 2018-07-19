@@ -9,13 +9,17 @@ use App\Repository\Contracts\CurrencyRepository;
 
 class CurrencyServ implements CurrencyService
 {
-    public function addCurrency(
-        AddCurrencyRequest $currencyRequest, 
-        CurrencyRepository $currencyRepository
-    ): Currency
+    private $currencyRepository;
+
+    public function __construct(CurrencyRepository $currencyRepository)
+    {
+        $this->currencyRepository = $currencyRepository;
+    }
+
+    public function addCurrency(AddCurrencyRequest $currencyRequest): Currency
     {
         $currency = new Currency;
         $currency->fill(['name' => $currencyRequest->getName()]); 
-        return $currencyRepository->add($currency);
+        return $this->currencyRepository->add($currency);
     }
 }

@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(WalletRepository::class, WalletRepo::class);
         $this->app->bind(CurrencyService::class, CurrencyServ::class);
         $this->app->bind(MarketService::class, MarketServ::class);
-        $this->app->bind(WalletyService::class, MarketServ::class);
+        $this->app->bind(WalletService::class, WalletServ::class);
         $this->app->bind(AddCurrencyRequest::class, AddCurrencyReq::class);
         $this->app->bind(AddLotRequest::class, AddLotReq::class);
         $this->app->bind(BuyLotRequest::class, BiyLotReq::class);

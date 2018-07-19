@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\{Lot, Trade, Wallet, Money};
-use App\Request\Contracts\{ AddLotRequest, BuyLotRequest };
+use App\Request\Contracts\{AddLotRequest,BuyLotRequest,MoneyRequest};
 use App\Response\Contracts\LotResponse;
 use App\Exceptions\MarketException\{
     ActiveLotExistsException,
@@ -15,8 +15,7 @@ use App\Exceptions\MarketException\{
     BuyInactiveLotException,
     LotDoesNotExistException
 };
-use App\Service\Contracts\MarketService;
-use App\Service\Contracts\WalletService;
+use App\Service\Contracts\{MarketService,WalletService};
 use App\Mail\TradeCreated;
 use App\Repository\Contracts\{LotRepository,WalletRepository,MoneyRepository,TradeRepository};
 
