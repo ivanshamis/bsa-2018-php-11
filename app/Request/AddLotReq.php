@@ -15,14 +15,14 @@ class AddLotReq implements AddLotRequest
     public function __construct(
         int $currencyId,
         int $sellerId,
-        int $datetimeOpen,
+        int $dateTimeOpen,
         int $dateTimeClose,
         float $price
     ) 
     {
         $this->currencyId = $currencyId;
         $this->sellerId = $sellerId;
-        $this->datetimeOpen = $datetimeOpen;
+        $this->dateTimeOpen = $dateTimeOpen;
         $this->dateTimeClose = $dateTimeClose;
         $this->price = $price;
     }

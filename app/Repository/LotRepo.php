@@ -28,13 +28,13 @@ class LotRepo implements LotRepository
 
     public function findActiveLot(int $userId) : ?Lot
     {
-        return Lot::where('user_id',$userId)->where('date_time_close','>',time())->first();    
+        return Lot::where('seller_id',$userId)->where('date_time_close','>',time())->first();    
     }
 
     public function findActiveCurrencyLot(int $userId, int $currencyId) : ?Lot
     {
-        return Lot::where('user_id', $userId)
-            ->where('currency_id', $currencyID)
+        return Lot::where('seller_id', $userId)
+            ->where('currency_id', $currencyId)
             ->where('date_time_close','>',time())
             ->first();    
     }
