@@ -233,7 +233,7 @@ class BuyLotTest extends TestCase
     {
         $findMoney = NULL;
         foreach ($this->monies as $money) {
-            if (($money->wallet_id==$walletId) and ($money->currency_id==$currencyId)) {
+            if (($money->wallet_id==$walletId) && ($money->currency_id==$currencyId)) {
                 $findMoney = $money;
                 break;
             }

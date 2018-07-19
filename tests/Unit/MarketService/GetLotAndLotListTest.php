@@ -59,6 +59,10 @@ class GetLotTest extends TestCase
             ->will($this->returnCallback(function($id) {
                 return $this->getLotById($id);
         }));
+        $this->lotRepository->method('findAll')
+            ->will($this->returnCallback(function() {
+                return $this->findAllLots();
+        }));
         $this->lot = TestDataFactory::createLot();
         $this->lot->seller_id = $this->seller->id;
         $this->lot = $this->lotRepository->add($this->lot);
@@ -191,7 +195,7 @@ class GetLotTest extends TestCase
     {
         $findMoney = NULL;
         foreach ($this->monies as $money) {
-            if (($money->wallet_id==$walletId) and ($money->currency_id==$currencyId)) {
+            if (($money->wallet_id==$walletId) && ($money->currency_id==$currencyId)) {
                 $findMoney = $money;
                 break;
             }
@@ -232,6 +236,11 @@ class GetLotTest extends TestCase
         return $this->lots[$id];
     }
 
+    protected function findAllLots()
+    {
+        return $this->lots;
+    }
+
     protected function getCurrencyById(int $id) : ?Currency
     {
         return $this->currencies[$id];
@@ -258,8 +267,14 @@ class GetLotTest extends TestCase
         $this->assertEquals($lotResponse->getPrice(), $price);
     }
 
-    /*public function test_get_lots_good()
+    public function test_get_lots_good()
     {
-        $lotResponse = $this->marketService->getLotList($this->lot->id);
-    }*/
+        $lotResponses = $this->marketService->getLotList();
+
+        $this->assertTrue(is_array($lotResponses));
+
+        foreach ($lotResponses as $lotResponse) {
+            $this->assertInstanceOf(LotResponse::class, $lotResponse);
+        }
+    }
 }

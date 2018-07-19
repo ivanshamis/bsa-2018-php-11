@@ -72,8 +72,8 @@ class AddLotTest extends TestCase
         $activeLot = NULL;
         foreach ($this->lots as $lot) {
             if (
-                ($lot->seller_id==$userId) and 
-                ($lot->date_time_close>time()) and
+                ($lot->seller_id==$userId) && 
+                ($lot->date_time_close>time()) &&
                 ($lot->currency_id==$currencyId)
             ) {
                 $activeLot = $lot;

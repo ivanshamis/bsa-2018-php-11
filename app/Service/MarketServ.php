@@ -190,7 +190,7 @@ class MarketServ implements MarketService
         $lots = $this->lotRepository->findAll();
         if (is_array($lots)) {
             foreach ($lots as $lot) {
-                $LotResponse[] = $this->getLot($lot);  
+                $lotResponse[] = $this->getLot($lot->id);  
             }
         }        
         return $lotResponse;
