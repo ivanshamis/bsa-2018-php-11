@@ -7,9 +7,19 @@ use App\Entity\Wallet;
 use App\Request\Contracts\CreateWalletRequest;
 use App\Request\Contracts\MoneyRequest;
 use App\Service\Contracts\WalletService;
+use App\Repository\Contracts\{WalletRepository,MoneyRepository};
 
 class WalletServ implements WalletService
 {
+    private $walletRepository;
+    private $moneyRepository;
+
+    public function __construct(WalletRepository $walletRepository, MoneyRepository $moneyRepository)
+    {
+        $this->walletRepository = $walletRepository;
+        $this->moneyRepository = $moneyRepository;
+    }
+
     /**
      * Add wallet to user.
      *
@@ -18,21 +28,11 @@ class WalletServ implements WalletService
      */
     public function addWallet(CreateWalletRequest $walletRequest) : Wallet
     {
-        return Wallet::create(
-            ['user_id' => $walletRequest->getUserId()]
-        );
-    }
-
-    public function getMoney(int $walletId, int $currencyId): Money
-    {
-        $money = Money::where('wallet_id', $walletId)->where('currency_id', $currencyId)->first();
-        if ($money === NULL) {
-            return Money::create([
-                'wallet_id' => $walletId,
-                'currency_id' => $currencyId,
-                'amount' => 0
-            ]);
-        }
+        $wallet = new Wallet;
+        $wallet->fill([
+            'user_id' => $walletRequest->getUserId()
+        ]);    
+        return $this->walletRepository->add($wallet);
     }
 
     /**
@@ -42,9 +42,20 @@ class WalletServ implements WalletService
      */
     public function addMoney(MoneyRequest $moneyRequest) : Money
     {
-        $money = $this->getMoney($moneyRequest->getWalletId(), $moneyRequest->getCurrencyId());
+        $money  = $this->moneyRepository->findByWalletAndCurrency(
+            $moneyRequest->getWalletId(), 
+            $moneyRequest->getCurrencyId()
+        );
+        if ($money === NULL) {
+            $money = new Money;
+            $money->fill([
+                'wallet_id' => $moneyRequest->getWalletId(),
+                'currency_id' => $moneyRequest->getCurrencyId(),
+                'amount' => 0
+            ]);
+        }
         $money->amount += $moneyRequest->getAmount();
-        return $money;   
+        return $this->moneyRepository->save($money);   
     }
 
     /**
@@ -55,15 +66,21 @@ class WalletServ implements WalletService
      */
     public function takeMoney(MoneyRequest $moneyRequest) : Money
     {
-        $money = $this->getMoney($moneyRequest->getWalletId(), $moneyRequest->getCurrencyId());
+        $money  = $this->moneyRepository->findByWalletAndCurrency(
+            $moneyRequest->getWalletId(), 
+            $moneyRequest->getCurrencyId()
+        );
+        if ($money === NULL) {
+            $money = new Money;
+            $money->fill([
+                'wallet_id' => $moneyRequest->getWalletId(),
+                'currency_id' => $moneyRequest->getCurrencyId(),
+                'amount' => 0
+            ]);
+        }
         if ($money->amount>=$moneyRequest->getAmount()) {
             $money->amount -= $moneyRequest->getAmount();
         }
-        return $money;
-    }
-
-    public function WalletIdByUserId(int $userId): int
-    {
-        return Wallet::where('user_id', $userId)->first()->id;
+        return $this->moneyRepository->save($money);
     }
 }

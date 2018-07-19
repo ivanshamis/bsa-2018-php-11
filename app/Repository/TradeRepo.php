@@ -9,6 +9,7 @@ class TradeRepo implements TradeRepository
 {
     public function add(Trade $trade) : Trade
     {
-
+        $trade->save();
+        return $trade;
     }
 }

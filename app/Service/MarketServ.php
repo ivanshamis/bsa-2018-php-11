@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Entity\{Lot, Trade, Wallet};
+use App\Entity\{Lot, Trade, Wallet, Money};
 use App\Request\Contracts\{ AddLotRequest, BuyLotRequest };
 use App\Response\Contracts\LotResponse;
 use App\Exceptions\MarketException\{
@@ -18,10 +18,34 @@ use App\Exceptions\MarketException\{
 use App\Service\Contracts\MarketService;
 use App\Service\Contracts\WalletService;
 use App\Mail\TradeCreated;
+use App\Repository\Contracts\{LotRepository,WalletRepository,MoneyRepository,TradeRepository};
 
 
 class MarketServ implements MarketService
 {
+    private $lotRepository; 
+    private $walletRepository; 
+    private $moneyRepository;
+    private $tradeRepository; 
+    private $walletService;
+    private $moneyRequest;
+
+    public function __construct(
+        LotRepository $lotRepository, 
+        WalletRepository $walletRepository,
+        MoneyRepository $moneyRepository,
+        TradeRepository $tradeRepository,
+        WalletService $walletService,
+        MoneyRequest $moneyRequest)
+    {
+        $this->lotRepository = $lotRepository;
+        $this->walletRepository = $walletRepository;
+        $this->moneyRepository = $moneyRepository;
+        $this->tradeRepository = $tradeRepository;
+        $this->walletService = $walletService;
+        $this->moneyRequest = $moneyRequest;
+    }
+    
     /**
      * Sell currency.
      *
@@ -35,23 +59,29 @@ class MarketServ implements MarketService
      */
     public function addLot(AddLotRequest $lotRequest) : Lot
     {
-        $lot = Lot::where('currency_id', $lotRequest->getCurrencyId())->first();
+        $lot = $this->lotRepository->findActiveCurrencyLot(
+            $lotRequest->getSellerId(), 
+            $lotRequest->getCurrencyId()
+        );
         if ($lot!==NULL) {
             throw new ActiveLotExistsException;
         }
-        if ($lotRequest->getDateTimeClose<$lotRequest->getDateTimeOpen) {
+        if ($lotRequest->getDateTimeClose()<$lotRequest->getDateTimeOpen()) {
             throw new IncorrectTimeCloseException;
         }
-        if ($lotRequest->getPrice<0) {
+        if ($lotRequest->getPrice()<0) {
             throw new IncorrectPriceException;
         }
-        return Lot::create([
+
+        $lot = new Lot;
+        $lot->fill([
             'currency_id' => $lotRequest->getCurrencyId(),
             'seller_id' => $lotRequest->getSellerId(),
             'date_time_open' => $lotRequest->getDateTimeOpen(),
             'date_time_close' => $lotRequest->getDateTimeClose(),
             'price' => $lotRequest->getPrice()
         ]);
+        return $this->lotRepository->add($lot);
     }   
 
     /**
@@ -68,11 +98,11 @@ class MarketServ implements MarketService
      */
     public function buyLot(BuyLotRequest $lotRequest) : Trade
     {
-        $lot = getLot($lotRequest->id);
-        if ($lot===NULL) {
-            throw new BuyInactiveLotException;
+        $lot = $this->lotRepository->getById($lotRequest->getLotId());
+        if ($lot === NULL) {
+            throw new BuyInactiveLotException;   
         }
-        if ($lot->getDateTimeClose() > date('Y/m/d h:i:s')) {
+        if ($lot->getDateTimeClose() > time()) {
             throw new BuyInactiveLotException;
         }
         if ($lot->seller_id === $lotRequest->getUserId()) {
@@ -81,33 +111,33 @@ class MarketServ implements MarketService
         if ($lotRequest->getAmount() < 1) {
             throw new IncorrectLotAmountException;
         }
-        if ($lotRequest->getAmount() > $lot->getAmount()) {
+        $sellerWallet = $this->walletRepository->findByUser($lot->seller_id); 
+        $lotMoney = $this->moneyRepository->findByWalletAndCurrency($sellerWallet->id, $lot->currency_id);
+        if ($lotRequest->getAmount() > $lotMoney->amount) {
             throw new BuyNegativeAmountException;
         }
-         
-        $walletService = App::make(WalletService::class);
-        $moneyRequest = App::make(MoneyRequest::class, [
-            'walletId' => $walletService->WalletIdByUserId($lot->seller_id),
-            'currencyId'=> $lot->currency_id,
-            'amount'=> $lotRequest->getAmount()
-        ]);
-        $walletSerrvice->takeMoney($moneyRequest);
+        $userWallet = $this->walletRepository->findByUser($lotRequest->getUserId());
 
-        $moneyRequest = App::make(MoneyRequest::class, [
-            'walletId' => $walletService->WalletIdByUserId($lotRequest->userId),
-            'currencyId'=> $lot->currency_id,
-            'amount'=> $lotRequest->getAmount()
-        ]);
-        $walletSerrvice->addMoney($moneyRequest);
+        $this->moneyRequest->setWalletId($sellerWallet->id);
+        $this->moneyRequest->setCurrencyId($lot->currency_id);
+        $this->moneyRequest->setAmount($lotRequest->getAmount());
+        $this->walletSerrvice->takeMoney($this->moneyRequest);
 
-        $trade =  Trade::create([
+        $this->moneyRequest->setWalletId($userWallet->id);
+        $this->walletSerrvice->addMoney($this->moneyRequest);
+
+        $trade = new Trade;
+        $trade->fill([
             'lot_id' => $lotRequest->getLotId(),
             'user_id' => $lotRequest->getUserId(),
             'amount' => $lotRequest->getAmount()
         ]);
+        $trade = $this->tradeRepository->add($trade);
 
         $tradeCreated = new TradeCreated($trade);
         Mail::to(User::find($lot->seller_id))->send($tradeCreated);
+
+        return $trade;
     }
 
     /**
@@ -121,7 +151,7 @@ class MarketServ implements MarketService
      */
     public function getLot(int $id) : LotResponse
     {
-        $lot = Lot::find($id);
+        $lot = $this->lotRepository->getById($id);
         if ($lot===NULL) {
             throw new LotDoesNotExistException;
         }

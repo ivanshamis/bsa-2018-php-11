@@ -10,9 +10,18 @@ class MoneyReq implements MoneyRequest
     private $currencyId;
     private $amount;
 
-    public function __construct(int $walletId, int $currencyId, float $amount) {
+    public function setWalletId(int $walletId)
+    {
         $this->walletId = $walletId;
+    }
+
+    public function setCurrencyId(int $walletId)
+    {
         $this->currencyId = $currencyId;
+    }
+
+    public function setAmount(float $amount)
+    {
         $this->amount = $amount;
     }
 

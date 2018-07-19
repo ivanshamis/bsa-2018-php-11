@@ -18,22 +18,6 @@ class Lot extends Model
         'price'
     ];
 
-    public function getSeller(): User 
-    {
-        return User::find($this->seller_id);
-    }
-
-    public function getCurrency(): Currency
-    {
-        return Currency::find($this->currency_id);
-    }
-
-    public function getAmount(Walletservice $walletService)
-    {
-        $walletId = $walletService->WalletIdByUserId($this->seller_id);
-        return $walletService->getMoney($walletId, $this->currency_id)->amount;        
-    }
-
     public function getDateTimeOpen() : int
     {
         if (is_int($this->date_time_open)) {
