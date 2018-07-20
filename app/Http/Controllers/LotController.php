@@ -32,7 +32,7 @@ class LotController extends Controller
          
         $currency = $this->currencyRepository->getCurrencyByName($request->currency_name);
         if ($currency===NULL) {
-            $message = 'No such currency!';
+            $message = 'Sorry, error has been occurred: "No such currency".';
             return view('lots-store')->with('message', $message);    
         }
 
