@@ -14,6 +14,7 @@ use App\Request\Contracts\{CreateWalletRequest,MoneyRequest};
 use App\Request\{AddCurrencyReq,AddLotReq,BuyLotReq,CreateWalletReq,MoneyReq};
 use App\Response\Contracts\LotResponse;
 use App\Response\LotRespo;
+use Route;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Schema::defaultStringLength(191);
+        Route::resourceVerbs([
+            'create' => 'add',
+        ]);
     }
 
     /**

@@ -20,7 +20,7 @@ class CurrencyRepo implements CurrencyRepository
 
     public function getCurrencyByName(string $name) : ?Currency
     {
-        return Currency::where('name',$name)->get();
+        return Currency::where('name',$name)->first();
     }
 
     /**

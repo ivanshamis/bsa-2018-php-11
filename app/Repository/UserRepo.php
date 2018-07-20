@@ -17,4 +17,9 @@ class UserRepo implements UserRepository
         $user->save();
         return $user;
     }
+
+    public function getFakeUser(): User
+    {
+        return factory(User::class)->create();
+    }
 }
