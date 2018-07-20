@@ -48,10 +48,10 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-        if (get_class($exception) === LotDoesNotExistException::class) {
-            //if ($request->expectsJson()) {
-                return response()->json(['error' => 'Unauthenticated.'], 400);
-            //}    
+        if ($request->expectsJson()) {
+            if (get_class($exception) !== AuthenticationException::class) {
+                return response()->json(['error' => [class_basename($exception),'400']], 400);
+            }    
         }
 
         return parent::render($request, $exception);
@@ -60,7 +60,7 @@ class Handler extends ExceptionHandler
     protected function unauthenticated($request, AuthenticationException $exception)
     {
         if ($request->expectsJson()) {
-            return response()->json(['error' => 'Unauthenticated.'], 400);
+            return response()->json(['error' => ['Unauthenticated','403']], 403);
         }
     return response('Unauthenticated.', 400);
     }

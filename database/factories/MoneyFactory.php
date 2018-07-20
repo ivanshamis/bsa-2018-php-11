@@ -17,7 +17,7 @@ $factory->define(Money::class, function (Faker $faker) {
     return [
         'currency_id' => $faker->numberBetween(1,99),
         //'currency_id' => Currency::inRandomOrder()->first()->id,
-        'amount' => $faker->randomFloat(2,0,1000000),
+        'amount' => $faker->randomFloat(2,0,10000),
         'wallet_id' => $faker->numberBetween(1,99),
         //'wallet_id' => Wallet::inRandomOrder()->first()->id,
     ];

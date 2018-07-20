@@ -17,12 +17,15 @@ class ApiTest extends TestCase
     use RefreshDatabase;
 
     const ENDPOINT = '/api/v1/lots';
+    const ENDPOINT_TRADE = '/api/v1/trades';
 
     private $user;
     private $lotAdded;
+    private $lotAddedMoneyAmount;
     private $lotToAdd;
     private $currency;
     private $addLotRequest;
+    private $buyLotRequest;
 
     public function setUp() {
         parent::setUp();
@@ -36,6 +39,7 @@ class ApiTest extends TestCase
         $money = factory(Money::class)->make();
         $money->currency_id = $this->currency->id;
         $money->wallet_id = $wallet->id;
+        $lotAddedMoneyAmount = $money->amount;
         $money->save();
         $this->lotAdded = factory(Lot::class)->make();
         $this->lotAdded->currency_id = $this->currency->id;
@@ -59,22 +63,31 @@ class ApiTest extends TestCase
             'date_time_close' => $this->lotToAdd->GetDateTimeClose(), 
             'price' => $this->lotToAdd->price
         ];
+
+        $this->buyLotRequest = [
+            'lot_id' => $this->lotAdded->id,
+            'amount' => $lotAddedMoneyAmount
+        ];
     }
 
     public function test_unauthorized_no_access() {
         $response = $this->json('GET', self::ENDPOINT);
-        $response->assertStatus(400);
+        $response->assertStatus(403);
         $response->assertHeader('Content-Type', 'application/json');
 
         $response = $this->json('GET', self::ENDPOINT."/{$this->lotAdded->id}");
-        $response->assertStatus(400);
+        $response->assertStatus(403);
         $response->assertHeader('Content-Type', 'application/json');
 
         $response = $this->json('POST', self::ENDPOINT, $this->addLotRequest);
-        $response->assertStatus(400);
+        $response->assertStatus(403);
         $response->assertHeader('Content-Type', 'application/json');
 
         $response = $this->json('GET', self::ENDPOINT."/1000000");
+        $response->assertStatus(403);
+        $response->assertHeader('Content-Type', 'application/json');
+
+        $response =$this->actingAs($this->user,'api')->json('GET', self::ENDPOINT."/1000000");
         $response->assertStatus(400);
         $response->assertHeader('Content-Type', 'application/json');
     }
@@ -90,10 +103,9 @@ class ApiTest extends TestCase
         $response->assertHeader('Content-Type', 'application/json');
     }
 
-    public function test_authorized_post() {
+    public function test_authorized_post_lot() {
         $response = $this->actingAs($this->user,'api')
             ->json('POST', self::ENDPOINT, $this->addLotRequest);
-        //echo($response->getContent());
         $response->assertStatus(201);
         $response->assertHeader('Content-Type', 'application/json');
 
@@ -101,5 +113,32 @@ class ApiTest extends TestCase
             'currency_id'=>$this->addLotRequest['currency_id'],
             'seller_id'=>$this->lotToAdd->seller_id
         ]);	
+    }
+
+    public function test_authorized_post_trade() {
+        $response = $this->actingAs($this->user,'api')
+            ->json('POST', self::ENDPOINT_TRADE, $this->buyLotRequest);
+        $response->assertStatus(201);
+        $response->assertHeader('Content-Type', 'application/json');
+
+        $this->assertDatabaseHas('trades', [
+            'lot_id'=>$this->buyLotRequest['lot_id']
+        ]);	
+    }
+
+    public function test_authorized_post_lot_bad() {
+        $request = $this->addLotRequest;
+        $request['price'] = -1;
+        $response = $this->actingAs($this->user,'api')
+            ->json('POST', self::ENDPOINT, $request);
+        $response->assertStatus(400);
+        $response->assertHeader('Content-Type', 'application/json');	
+
+        $request = $this->addLotRequest;
+        $request['currency_id'] = 'currency';
+        $response = $this->actingAs($this->user,'api')
+            ->json('POST', self::ENDPOINT, $request);
+        $response->assertStatus(400);
+        $response->assertHeader('Content-Type', 'application/json');	
     }
 }

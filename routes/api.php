@@ -19,5 +19,5 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::middleware('auth:api') -> group (function() {
     Route::apiResource('/v1/lots', 'Api\v1\LotController')->except(['destroy','update']);
-    Route::apiResource('/v1/trades','TradeController')->only(['store']);   
+    Route::apiResource('/v1/trades','Api\v1\TradeController')->only(['store']);   
 });

@@ -3,6 +3,7 @@
 use Faker\Generator as Faker;
 use App\Entity\{Lot,Currency};
 use App\User;
+use Carbon\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,8 +21,8 @@ $factory->define(Lot::class, function (Faker $faker) {
         'currency_id' => $faker->numberBetween(1,99),
         //'seller_id' => User::inRandomOrder()->first()->id,
         //'currency_id' => Currency::inRandomOrder()->first()->id,
-        'date_time_open' => date('Y-m-d h:i:s', time()),
-        'date_time_close' => date('Y-m-d h:i:s', time()+3600),
+        'date_time_open' => Carbon::createFromTimestamp((int) time()),
+        'date_time_close' => Carbon::createFromTimestamp((int) time()+3600),
         'price' => $faker->randomFloat(2,0,1000),
     ];
 });
