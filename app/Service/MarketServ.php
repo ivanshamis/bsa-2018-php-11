@@ -27,6 +27,7 @@ use App\Repository\Contracts\{
 };
 use Illuminate\Support\Facades\Mail;
 use App\User;
+use Carbon\Carbon;
 
 
 class MarketServ implements MarketService
@@ -87,12 +88,15 @@ class MarketServ implements MarketService
             throw new IncorrectPriceException;
         }
 
+        $dateTimeOpen = Carbon::createFromTimestamp((int) $lotRequest->getDateTimeOpen());
+        $dateTimeClose = Carbon::createFromTimestamp((int) $lotRequest->getDateTimeClose());
+
         $lot = new Lot;
         $lot->fill([
             'currency_id' => $lotRequest->getCurrencyId(),
             'seller_id' => $lotRequest->getSellerId(),
-            'date_time_open' => $lotRequest->getDateTimeOpen(),
-            'date_time_close' => $lotRequest->getDateTimeClose(),
+            'date_time_open' => $dateTimeOpen,
+            'date_time_close' => $dateTimeClose,
             'price' => $lotRequest->getPrice()
         ]);
         return $this->lotRepository->add($lot);

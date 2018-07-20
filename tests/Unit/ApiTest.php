@@ -90,7 +90,7 @@ class ApiTest extends TestCase
         $response->assertHeader('Content-Type', 'application/json');
     }
 
-    /*public function test_authorized_post() {
+    public function test_authorized_post() {
         $response = $this->actingAs($this->user,'api')
             ->json('POST', self::ENDPOINT, $this->addLotRequest);
         //echo($response->getContent());
@@ -101,5 +101,5 @@ class ApiTest extends TestCase
             'currency_id'=>$this->addLotRequest['currency_id'],
             'seller_id'=>$this->lotToAdd->seller_id
         ]);	
-    }*/
+    }
 }

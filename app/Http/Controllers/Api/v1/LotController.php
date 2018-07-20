@@ -29,9 +29,6 @@ class LotController extends Controller
 
     public function store(Request $request)
     {
-        //$dateTimeOpen = intval($request->date_time_open);
-        //$dateTimeOpen = date('Y-m-d H-i-s', $dateTimeOpen);
-
         $lotRequest =  app()->make(AddLotRequest::class, [
             'currencyId' => $request->currency_id,
             'sellerId' => Auth::user()->id,
