@@ -1,7 +1,7 @@
 <?php
 
 use Faker\Generator as Faker;
-use App\User;
+use App\Entity\{Money,Currency,Wallet};
 
 /*
 |--------------------------------------------------------------------------
@@ -13,12 +13,12 @@ use App\User;
 | model instances for testing / seeding your application's database.
 |
 */
-
-$factory->define(User::class, function (Faker $faker) {
+$factory->define(Money::class, function (Faker $faker) {
     return [
-        'name' => $faker->name,
-        'email' => $faker->unique()->safeEmail,
-        'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', // secret
-        'remember_token' => str_random(10),
+        'currency_id' => $faker->numberBetween(1,99),
+        //'currency_id' => Currency::inRandomOrder()->first()->id,
+        'amount' => $faker->randomFloat(2,0,10000),
+        'wallet_id' => $faker->numberBetween(1,99),
+        //'wallet_id' => Wallet::inRandomOrder()->first()->id,
     ];
 });

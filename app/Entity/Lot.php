@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use App\Service\WalletService;
+use App\User;
 
 class Lot extends Model
 {
