@@ -16,3 +16,8 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware('auth:api') -> group (function() {
+    Route::apiResource('/v1/lots', 'Api\v1\LotController')->except(['destroy','update']);
+    Route::apiResource('/v1/trades','TradeController')->only(['store']);   
+});

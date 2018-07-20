@@ -2,6 +2,7 @@
 
 use Faker\Generator as Faker;
 use App\Entity\Wallet;
+use App\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,5 +17,6 @@ use App\Entity\Wallet;
 $factory->define(Wallet::class, function (Faker $faker) {
     return [
         'user_id' => $faker->numberBetween(1,99),
+        //'user_id' => User::inRandomOrder()->first()->id,
     ];
 });

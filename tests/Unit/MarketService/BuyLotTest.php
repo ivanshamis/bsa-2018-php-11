@@ -153,11 +153,13 @@ class BuyLotTest extends TestCase
     
     protected function addLot(Lot $lot) : Lot
     {   
-        if (!is_array($this->lots)) {
-            $lot->id = 1;
-        }
-        else {
-            $lot->id = max(array_keys($this->lots))+1;
+        if ($lot->id === NULL) {
+            if (!is_array($this->lots)) {
+                $lot->id = 1;
+            }
+            else {
+                $lot->id = max(array_keys($this->lots))+1;
+            }
         }
         $this->lots[$lot->id] = $lot; 
         return $lot;
@@ -170,13 +172,15 @@ class BuyLotTest extends TestCase
     }
 
     protected function saveMoney(Money $money): Money
-    {   
-        if (!is_array($this->monies)) {
-            $money->id = 1;
-        }
-        else {
-            if ($money->id === NULL) {
-                $money->id = max(array_keys($this->monies))+1;
+    { 
+        if ($money->id === NULL) {  
+            if (!is_array($this->monies)) {
+                $money->id = 1;
+            }
+            else {
+                if ($money->id === NULL) {
+                    $money->id = max(array_keys($this->monies))+1;
+                }
             }
         }
         $this->monies[$money->id] = $money; 
@@ -185,11 +189,13 @@ class BuyLotTest extends TestCase
 
     protected function addUser(User $user) : User
     {   
-        if (!is_array($this->users)) {
-            $user->id = 1;
-        }
-        else {
-            $user->id = max(array_keys($this->users))+1;
+        if ($user->id === NULL) {
+            if (!is_array($this->users)) {
+                $user->id = 1;
+            }
+            else {
+                $user->id = max(array_keys($this->users))+1;
+            }
         }
         $this->users[$user->id] = $user; 
         return $user;
@@ -197,11 +203,13 @@ class BuyLotTest extends TestCase
 
     protected function addWallet(Wallet $wallet) : Wallet
     {   
-        if (!is_array($this->wallets)) {
-            $wallet->id = 1;
-        }
-        else {
-            $wallet->id = max(array_keys($this->wallets))+1;
+        if ($wallet->id === NULL) {
+            if (!is_array($this->wallets)) {
+                $wallet->id = 1;
+            }
+            else {
+                $wallet->id = max(array_keys($this->wallets))+1;
+            }
         }
         $this->wallets[$wallet->id] = $wallet; 
         return $wallet;

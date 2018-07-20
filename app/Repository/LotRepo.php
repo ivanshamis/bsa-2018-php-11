@@ -28,7 +28,9 @@ class LotRepo implements LotRepository
 
     public function findActiveLot(int $userId) : ?Lot
     {
-        return Lot::where('seller_id',$userId)->where('date_time_close','>',time())->first();    
+        return Lot::where('seller_id',$userId)
+            ->where('date_time_close','>',date('Y-m-d h:i:s', time()))
+            ->first();    
     }
 
     public function findActiveCurrencyLot(int $userId, int $currencyId) : ?Lot

@@ -14,7 +14,7 @@ class MoneyRepo implements MoneyRepository
     }
 
     public function findByWalletAndCurrency(int $walletId, int $currencyId) : ?Money
-    {
-        $money = Money::where('wallet_id', $walletId)->where('currency_id', $currencyId)->first();    
+    {   
+        return $money = Money::where('wallet_id', $walletId)->where('currency_id', $currencyId)->first();    
     }
 }

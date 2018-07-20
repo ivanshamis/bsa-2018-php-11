@@ -1,7 +1,8 @@
 <?php
 
 use Faker\Generator as Faker;
-use App\Entity\Lot;
+use App\Entity\{Lot,Currency};
+use App\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,8 +18,10 @@ $factory->define(Lot::class, function (Faker $faker) {
     return [
         'seller_id' => $faker->numberBetween(1,99),
         'currency_id' => $faker->numberBetween(1,99),
-        'date_time_open' => time(),
-        'date_time_close' => time() + $faker->numberBetween(1200,3600),
+        //'seller_id' => User::inRandomOrder()->first()->id,
+        //'currency_id' => Currency::inRandomOrder()->first()->id,
+        'date_time_open' => date('Y-m-d h:i:s', time()),
+        'date_time_close' => date('Y-m-d h:i:s', time()+3600),
         'price' => $faker->randomFloat(2,0,1000),
     ];
 });

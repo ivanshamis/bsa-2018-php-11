@@ -148,9 +148,9 @@ class MarketServ implements MarketService
         ]);
         $trade = $this->tradeRepository->add($trade);
 
-        $tradeCreated = new TradeCreated($trade);
+        $tradeCreatedMessage = new TradeCreated($trade);
         $user = $this->userRepository->getById($lot->seller_id);
-        Mail::to($user)->send($tradeCreated);
+        Mail::to($user)->send($tradeCreatedMessage->build());
 
         return $trade;
     }
@@ -170,12 +170,26 @@ class MarketServ implements MarketService
         if ($lot===NULL) {
             throw new LotDoesNotExistException;
         }
+
+        $userName = $this->userRepository->getById($lot->seller_id)->name;
+        $currencyName = $this->currencyRepository->getById($lot->currency_id)->name;
+        $wallet = $this->walletRepository->findByUser($lot->seller_id);
+        $money = $this->moneyRepository->findByWalletAndCurrency($wallet->id,$lot->currency_id);
+        if ($money===NULL) {
+            $amount = 0;
+        }
+        else {
+            $amount = $money->amount;
+        }
+
         return app()->make(LotResponse::class, [
-            'lot' => $lot,
-            'userRepository' => $this->userRepository,
-            'currencyRepository' => $this->currencyRepository,
-            'moneyRepository' => $this->moneyRepository,
-            'walletRepository' => $this->walletRepository
+           'id' => $lot->id,
+           'userName' => $userName,
+           'currencyName' => $currencyName,
+           'amount' => $amount,
+           'dateTimeOpen' => $lot->getDateTimeOpen(),
+           'dateTimeClose' => $lot->getDateTimeClose(),
+           'price' => $lot->price  
         ]);
     }
 

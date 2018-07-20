@@ -57,11 +57,13 @@ class AddLotTest extends TestCase
 
     public function add(Lot $lot) : Lot
     {   
-        if (!is_array($this->lots)) {
-            $lot->id = 1;
-        }
-        else {
-            $lot->id = max(array_keys($this->lots))+1;
+        if ($lot->id === NULL) {
+            if (!is_array($this->lots)) {
+                $lot->id = 1;
+            }
+            else {
+                $lot->id = max(array_keys($this->lots))+1;
+            }
         }
         $this->lots[$lot->id] = $lot; 
         return $lot;
@@ -73,7 +75,7 @@ class AddLotTest extends TestCase
         foreach ($this->lots as $lot) {
             if (
                 ($lot->seller_id==$userId) && 
-                ($lot->date_time_close>time()) &&
+                ($lot->date_time_close>date('Y-m-d h:i:s', time())) &&
                 ($lot->currency_id==$currencyId)
             ) {
                 $activeLot = $lot;
